@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 import csv
 from io import StringIO
@@ -23,21 +23,19 @@ current_subtitle_index = 0
 
 @app.route('/')
 def home():
-    with open('templates/index.html', 'r') as file:
-        template = file.read()
-    return render_template_string('index.html')
+    return render_template('index.html')
 
 @app.route('/api/subtitles/upload', methods=['POST'])
-def upload_subtites():
+def upload_subtitles():
     data = request.json.get('data')
     if not data:
         return jsonify({'error': 'No data provided'}), 400
     
     try:
-        #read csv
+        # read csv
         stream = StringIO(data)
         csv_reader = csv.DictReader(stream)
-
+        
         for row in csv_reader:
             new_subtitle = Subtitle(
                 sequence_number=int(row['sequence_number']),
@@ -48,7 +46,7 @@ def upload_subtites():
             )
             db.session.add(new_subtitle)
         db.session.commit()
-        return jsonify({'message': 'Subtitles uploaded succesfully'}), 201
+        return jsonify({'message': 'Subtitles uploaded successfully'}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
@@ -57,9 +55,9 @@ def upload_subtites():
 @app.route('/api/subtitles/next', methods=['GET'])
 def get_next_subtitle():
     global current_subtitle_index
-    
+
     subtitles = Subtitle.query.order_by(Subtitle.sequence_number).all()
-    
+
     if current_subtitle_index < len(subtitles):
 
         current_subtitle = subtitles[current_subtitle_index]
@@ -73,14 +71,13 @@ def get_next_subtitle():
     else:
         return jsonify({'message': 'No more subtitles available'}), 404
 
-
-@app.route('/api/subtitles/advance', methods=['Post'])
+@app.route('/api/subtitles/advance', methods=['POST'])
 def advance_subtitle():
     global current_subtitle_index
     current_subtitle_index += 1
 
     subtitles = Subtitle.query.order_by(Subtitle.sequence_number).all()
-    
+
     if current_subtitle_index < len(subtitles):
 
         return jsonify({'message': 'Advanced to next subtitle'}), 200
@@ -89,19 +86,19 @@ def advance_subtitle():
         current_subtitle_index = len(subtitles) - 1
         return jsonify({'message': 'Reached the end of subtitles'}), 200
 
-# all subtitless
+# all subtitles
 @app.route('/api/subtitles', methods=['GET'])
 def get_all_subtitles():
- 
+
     subtitles = Subtitle.query.order_by(Subtitle.sequence_number).all()
-    
+
     subtitles_list = [{
         'id': subtitle.id,
         'text': subtitle.text,
         'language': subtitle.language,
         'sequence_number': subtitle.sequence_number
     } for subtitle in subtitles]
-
+    
     return jsonify(subtitles_list)
 
 if __name__ == "__main__":
