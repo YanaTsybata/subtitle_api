@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ukr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Завантаження субтитрів</title> 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    </head>
+    <body>
+        <h1>Завантаження субтитрів</h1>
+        <textarea id="subtitleText" rows="10" cols="50" placeholder="Вставте вміст CSV-файлу сюди"></textarea>
+        <br>
+        <button onclick="uploadSubtitles()">Завантажити субтитрів</button>
+        <br>
+        <h2>Навігація по API:</h2>
+        <ul>
+            <li><a href="/api/subtitles" target="_blank">Отримати всі субтитри</a></li>
+            <li><a href="/api/subtitles/next" target="_blank">Отримати наступний субтитр</a></li>
+            <li><button onclick="advanceSubtitle()">Перейти до наступного субтитру</button></li>
+        </ul>
+        <div id="result"></div>
+
+        <script>
+            function uploadSubtitles() {
+                const subtitlesText = document.getElementById('subtitlesText').value;
+                axios.post('/api/subtitles/upload', { data: subtitlesText })
+                    .then(response => {
+                        document.getElementById('result').innerText = 'Субтитры успешно загружены';
+                    })
+                    .catch(error => {
+                        document.getElementById('result').innerText = 'Ошибка при загрузке: ' + error.response.data.error;
+                    });
+            }
+    
+            function advanceSubtitle() {
+                axios.post('/api/subtitles/advance')
+                    .then(response => {
+                        document.getElementById('result').innerText = response.data.message;
+                    })
+                    .catch(error => {
+                        document.getElementById('result').innerText = 'Ошибка: ' + error.response.data.message;
+                    });
+            }
+        </script>
+    </body>
+</html>

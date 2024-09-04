@@ -1,5 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string
 from flask_sqlalchemy import SQLAlchemy
+import csv
+from io import StringIO
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///subtitles.db'
@@ -8,6 +10,8 @@ db = SQLAlchemy(app)
 class Subtitle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sequence_number = db.Column(db.Integer, nullable=False)
+    start_time = db.Column(db.Float, nullable=False)
+    end_time = db.Column(db.Float, nullable=False)
     text = db.Column(db.Text, nullable=False)
     language = db.Column(db.String(10), nullable=False)
 
@@ -17,6 +21,37 @@ class Subtitle(db.Model):
 # subtitles tracking:
 current_subtitle_index = 0
 
+@app.route('/')
+def home():
+    with open('templates/index.html', 'r') as file:
+        template = file.read()
+    return render_template_string('index.html')
+
+@app.route('/api/subtitles/upload', methods=['POST'])
+def upload_subtites():
+    data = request.json.get('data')
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+    
+    try:
+        #read csv
+        stream = StringIO(data)
+        csv_reader = csv.DictReader(stream)
+
+        for row in csv_reader:
+            new_subtitle = Subtitle(
+                sequence_number=int(row['sequence_number']),
+                start_time=float(row['start_time']),
+                end_time=float(row['end_time']),
+                text=row['text'],
+                language=row['language']
+            )
+            db.session.add(new_subtitle)
+        db.session.commit()
+        return jsonify({'message': 'Subtitles uploaded succesfully'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
 
 # get subtitle
 @app.route('/api/subtitles/next', methods=['GET'])
@@ -54,31 +89,6 @@ def advance_subtitle():
         current_subtitle_index = len(subtitles) - 1
         return jsonify({'message': 'Reached the end of subtitles'}), 200
 
-
-# add new subtitle
-@app.route('/api/subtitles', methods=['POST'])
-def add_subtitle():
-    data = request.json
-
-    if not all(key in ('text', 'language', 'sequence_number')):
-        return jsonify({'message': 'Missing required fields'}), 400
-    
-    new_subtitle = Subtitle(
-        text=data['text'],
-        language=data['language'],
-        sequence_number=data['sequence_number']
-    )
-
-    db.session.add(new_subtitle)
-    db.session.commit()
-
-    return jsonify({
-        'id': new_subtitle.id,
-        'text': new_subtitle.text,
-        'language': new_subtitle.language,
-        'sequence_number': new_subtitle.sequence_number
-    }), 201  
-
 # all subtitless
 @app.route('/api/subtitles', methods=['GET'])
 def get_all_subtitles():
@@ -94,14 +104,5 @@ def get_all_subtitles():
 
     return jsonify(subtitles_list)
 
-
-@app.route('/')
-def home():
-    return '<h1>FLASK REST API</h1>'
-
-
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
-    
+    app.run(host='0.0.0.0', port=5001, debug=True)
