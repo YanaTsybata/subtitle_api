@@ -30,57 +30,60 @@ def upload_subtitles():
     data = request.json.get('data')
     if not data:
         return jsonify({'error': 'No data provided'}), 400
-    
+
     try:
-        # read csv
-        stream = StringIO(data)
-        csv_reader = csv.DictReader(stream)
+        lines = data.strip().split('\n')
         
-        for row in csv_reader:
+        for i, line in enumerate(lines, start=1):
             new_subtitle = Subtitle(
-                sequence_number=int(row['sequence_number']),
-                start_time=float(row['start_time']),
-                end_time=float(row['end_time']),
-                text=row['text'],
-                language=row['language']
+                sequence_number=i,
+                start_time=float(i),
+                end_time=float(i+1),
+                text=line.strip(),
+                language='auto'
             )
             db.session.add(new_subtitle)
+
         db.session.commit()
-        return jsonify({'message': 'Subtitles uploaded successfully'}), 201
+        return jsonify({'message': 'Субтитри успішно завантажено'}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
 # get subtitle
 @app.route('/api/subtitles/next', methods=['GET'])
-def get_next_subtitle():
+def get_current_subtitle():
     global current_subtitle_index
-
-    subtitles = Subtitle.query.order_by(Subtitle.sequence_number).all()
-
-    if current_subtitle_index < len(subtitles):
-
-        current_subtitle = subtitles[current_subtitle_index]
-
+    subtitle = Subtitle.query.order_by(Subtitle.sequence_number).offset(current_subtitle_index).first()
+    if subtitle:
         return jsonify({
-            'id': current_subtitle.id,
-            'text': current_subtitle.text,
-            'language': current_subtitle.language,
-            'sequence_number': current_subtitle.sequence_number
-        })
+            'id': subtitle.id,
+            'text': subtitle.text,
+            'language': subtitle.language,
+            'sequence_number': subtitle.sequence_number,
+            'start_time': subtitle.start_time,
+            'end_time': subtitle.end_time
+        }), 200
     else:
-        return jsonify({'message': 'No more subtitles available'}), 404
+        return jsonify({'message': 'Немає доступних субтитрів'}), 404
 
 @app.route('/api/subtitles/advance', methods=['POST'])
 def advance_subtitle():
-    global current_subtitle_index
-    current_subtitle_index += 1
-
+    global current_subtitle_index    
     subtitles = Subtitle.query.order_by(Subtitle.sequence_number).all()
-
-    if current_subtitle_index < len(subtitles):
-
-        return jsonify({'message': 'Advanced to next subtitle'}), 200
+    
+    if current_subtitle_index < len(subtitles) - 1:
+        current_subtitle_index += 1
+        subtitle = subtitles[current_subtitle_index]
+        return jsonify({
+            'id': subtitle.id,
+            'text': subtitle.text,
+            'language': subtitle.language,
+            'sequence_number': subtitle.sequence_number,
+            'start_time': subtitle.start_time,
+            'end_time': subtitle.end_time,
+            'message': 'Advanced to next subtitle'
+        }), 200
     else:
 
         current_subtitle_index = len(subtitles) - 1
@@ -102,4 +105,6 @@ def get_all_subtitles():
     return jsonify(subtitles_list)
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(host='0.0.0.0', port=5001, debug=True)

@@ -5,16 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Завантаження субтитрів</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
-    <style>
-        #subtitleDisplay {
-            font-size: 24px;
-            text-align: center;
-            margin-top: 20px;
-            padding: 10px;
-            background-color: rgba(0,0,0,0.7);
-            color: white;
-        }
-    </style>
+    
 </head>
 <body>
     <h1>Завантаження субтитрів</h1>
@@ -22,12 +13,9 @@
     <br>
     <button onclick="uploadSubtitles()">Завантажити субтитри</button>
     <br>
-    <h2>Навігація по API:</h2>
-    <ul>
-        <li><a href="/api/subtitles" target="_blank">Отримати всі субтитри</a></li>
-        <li><a href="/api/subtitles/next" target="_blank">Отримати наступний субтитр</a></li>
-        <li><button onclick="advanceSubtitle()">Перейти до наступного субтитру</button></li>
-    </ul>
+    <h2>Навігація по субтитрах:</h2>
+    <button onclick="showCurrentSubtitle()">Показати поточний субтитр</button>
+    <button onclick="advanceSubtitle()">Перейти до наступного субтитру</button>
     <div id="subtitleDisplay"></div>
     <div id="result"></div>
     <script>
@@ -35,34 +23,46 @@
             const subtitlesText = document.getElementById('subtitlesText').value;
             axios.post('/api/subtitles/upload', { data: subtitlesText })
                 .then(response => {
-                    document.getElementById('result').innerText = 'Субтитри успішно завантажено';
+                    document.getElementById('result').innerText = response.data.message;
                 })
                 .catch(error => {
-                    document.getElementById('result').innerText = 'Помилка при завантаженні: ' + error.response.data.error;
+                    document.getElementById('result').innerText = 'Помилка при завантаженні: ' + (error.response ? error.response.data.error : error.message);
                 });
         }
-
+        
+        function showCurrentSubtitle() {
+            axios.get('/api/subtitles/current')
+                .then(response => {
+                    const subtitle = response.data;
+                    if (subtitle.text) {
+                        document.getElementById('subtitleDisplay').innerText = `${subtitle.text} (${subtitle.start_time} - ${subtitle.end_time})`;
+                    } else {
+                        document.getElementById('subtitleDisplay').innerText = 'Немає доступних субтитрів';
+                    }
+                    document.getElementById('result').innerText = '';
+                })
+                .catch(error => {
+                    document.getElementById('result').innerText = 'Помилка: ' + (error.response ? error.response.data.message : error.message);
+                    document.getElementById('subtitleDisplay').innerText = '';
+                });
+        }
+        
         function advanceSubtitle() {
             axios.post('/api/subtitles/advance')
                 .then(response => {
-                    document.getElementById('result').innerText = response.data.message;
-                    showNextSubtitle();
+                    if (response.data.text) {
+                        document.getElementById('subtitleDisplay').innerText = `${response.data.text} (${response.data.start_time} - ${response.data.end_time})`;
+                        document.getElementById('result').innerText = response.data.message;
+                    } else {
+                        document.getElementById('subtitleDisplay').innerText = '';
+                        document.getElementById('result').innerText = response.data.message;
+                    }
                 })
                 .catch(error => {
-                    document.getElementById('result').innerText = 'Помилка: ' + error.response.data.message;
+                    document.getElementById('result').innerText = 'Помилка: ' + (error.response ? error.response.data.message : error.message);
+                    document.getElementById('subtitleDisplay').innerText = '';
                 });
         }
-
-        function showNextSubtitle() {
-            axios.get('/api/subtitles/next')
-                .then(response => {
-                    const subtitle = response.data;
-                    document.getElementById('subtitleDisplay').innerText = subtitle.text;
-                })
-                .catch(error => {
-                    document.getElementById('result').innerText = 'Помилка: ' + error.response.data.message;
-                });
-        }
-    </script>
+        </script>
 </body>
 </html>
