@@ -16,6 +16,7 @@
     <h2>Навігація по субтитрах:</h2>
     <button onclick="showCurrentSubtitle()">Показати поточний субтитр</button>
     <button onclick="advanceSubtitle()">Перейти до наступного субтитру</button>
+    <button onclick="resetSubtitleIndex()">Скинути індекс субтитрів</button>
     <div id="subtitleDisplay"></div>
     <div id="result"></div>
     <script>
@@ -33,13 +34,13 @@
         function showCurrentSubtitle() {
             axios.get('/api/subtitles/current')
                 .then(response => {
-                    const subtitle = response.data;
-                    if (subtitle.text) {
-                        document.getElementById('subtitleDisplay').innerText = `${subtitle.text} (${subtitle.start_time} - ${subtitle.end_time})`;
+                    if (response.data.text) {
+                        document.getElementById('subtitleDisplay').innerText = `${response.data.text} (${response.data.start_time} - ${response.data.end_time})`;
+                        document.getElementById('result').innerText = response.data.message;
                     } else {
-                        document.getElementById('subtitleDisplay').innerText = 'Немає доступних субтитрів';
+                        document.getElementById('subtitleDisplay').innerText = '';
+                        document.getElementById('result').innerText = response.data.message;
                     }
-                    document.getElementById('result').innerText = '';
                 })
                 .catch(error => {
                     document.getElementById('result').innerText = 'Помилка: ' + (error.response ? error.response.data.message : error.message);
@@ -63,6 +64,17 @@
                     document.getElementById('subtitleDisplay').innerText = '';
                 });
         }
-        </script>
+
+        function resetSubtitleIndex() {
+            axios.post('/api/subtitles/reset')
+                .then(response => {
+                    document.getElementById('result').innerText = response.data.message;
+                    document.getElementById('subtitleDisplay').innerText = '';
+                })
+                .catch(error => {
+                    document.getElementById('result').innerText = 'Помилка: ' + (error.response ? error.response.data.message : error.message);
+                });
+        }
+    </script>
 </body>
 </html>
