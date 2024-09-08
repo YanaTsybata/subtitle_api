@@ -133,6 +133,6 @@ if __name__ == "__main__":
         if should_clear == 'true':
             clear_database()
         else:
-            print("The database is not cleared on startup. \n База данных не очищена при запуске.")
-        print(f"Total subtitles in the database: {Subtitle.query.count()} \n Всего субтитров в базе: {Subtitle.query.count()}")
+            print("The database is not cleared on startup. \n База даних не очищена під час запуску.")
+        print(f"Total subtitles in the database: {Subtitle.query.count()} \n Усього субтитрів у базі: {Subtitle.query.count()}")
     app.run(host='0.0.0.0', port=5001, debug=True)
