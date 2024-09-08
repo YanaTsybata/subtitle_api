@@ -1,22 +1,21 @@
 <!DOCTYPE html>
-<html lang="ukr">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Завантаження субтитрів</title>
+    <title>Subtitle loading <br /> Завантаження субтитрів</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
-    
 </head>
 <body>
-    <h1>Завантаження субтитрів</h1>
-    <textarea id="subtitlesText" rows="10" cols="50" placeholder="Вставте вміст CSV-файлу сюди"></textarea>
+    <h1>Subtitle loading <br /> Завантаження субтитрів</h1>
+    <textarea id="subtitlesText" rows="10" cols="50" placeholder="Paste the CSV file here"></textarea>
     <br>
-    <button onclick="uploadSubtitles()">Завантажити субтитри</button>
+    <button onclick="uploadSubtitles()"> Subtitle loading <br /> Завантажити субтитри</button>
     <br>
-    <h2>Навігація по субтитрах:</h2>
-    <button onclick="showCurrentSubtitle()">Показати поточний субтитр</button>
-    <button onclick="advanceSubtitle()">Перейти до наступного субтитру</button>
-    <button onclick="resetSubtitleIndex()">Скинути індекс субтитрів</button>
+    <h2>Subtitle navigation: <br /> Навігація по субтитрах:</h2>
+    <button onclick="showCurrentSubtitle()">Show current subtitle <br /> Показати поточний субтитр</button>
+    <button onclick="advanceSubtitle()">Go to the next subtitle <br /> Перейти до наступного субтитру</button>
+    <button onclick="resetSubtitleIndex()">Reset subtitle index <br /> Скинути індекс субтитрів</button>
     <div id="subtitleDisplay"></div>
     <div id="result"></div>
     <script>
@@ -27,7 +26,7 @@
                     document.getElementById('result').innerText = response.data.message;
                 })
                 .catch(error => {
-                    document.getElementById('result').innerText = 'Помилка при завантаженні: ' + (error.response ? error.response.data.error : error.message);
+                    document.getElementById('result').innerText = 'Error loading: Помилка при завантаженні: ' + (error.response ? error.response.data.error : error.message);
                 });
         }
         
@@ -43,7 +42,7 @@
                     }
                 })
                 .catch(error => {
-                    document.getElementById('result').innerText = 'Помилка: ' + (error.response ? error.response.data.message : error.message);
+                    document.getElementById('result').innerText = 'Error: ' + (error.response ? error.response.data.message : error.message);
                     document.getElementById('subtitleDisplay').innerText = '';
                 });
         }
@@ -60,7 +59,7 @@
                     }
                 })
                 .catch(error => {
-                    document.getElementById('result').innerText = 'Помилка: ' + (error.response ? error.response.data.message : error.message);
+                    document.getElementById('result').innerText = 'Error: ' + (error.response ? error.response.data.message : error.message);
                     document.getElementById('subtitleDisplay').innerText = '';
                 });
         }
@@ -72,7 +71,7 @@
                     document.getElementById('subtitleDisplay').innerText = '';
                 })
                 .catch(error => {
-                    document.getElementById('result').innerText = 'Помилка: ' + (error.response ? error.response.data.message : error.message);
+                    document.getElementById('result').innerText = 'Error: ' + (error.response ? error.response.data.message : error.message);
                 });
         }
     </script>

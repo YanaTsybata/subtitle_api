@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subtitle management <br /> Керування субтитрами</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #control-panel {
+            text-align: center;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>  
+    <div id="control-panel">
+        <h1>Subtitle management <br /> Керування субтитрами</h1>
+        <button id="next-subtitle">Next subtitle <br /> Наступний субтитр</button>
+        <div id="current-subtitle"></div>
+    </div>
+    <script>
+        const nextButton = document.getElementById('next-subtitle');
+        const currentSubtitleDiv = document.getElementById('current-subtitle');
+
+        function updateCurrentSubtitle() {
+            fetch('/api/subtitles/current')
+                .then(response => response.json())
+                .then(data => {
+                    currentSubtitleDiv.textContent = `Current subtitle: ${data.text}`;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        nextButton.addEventListener('click', () => {
+            fetch('/api/subtitles/advance', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    updateCurrentSubtitle();
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        // Load the first subtitle immediately
+        updateCurrentSubtitle();
+    </script>
+</body>
+</html>
