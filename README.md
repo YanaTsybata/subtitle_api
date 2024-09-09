@@ -11,9 +11,9 @@ This Flask application enables real-time subtitle management for multilingual br
 
 ## Technology Stack
 
-Backend: Python with Flask framework
-Frontend: HTML with embedded CSS and JavaScript
-Database: SQLite with SQLAlchemy
+- Backend: Python with Flask framework
+- Frontend: HTML with embedded CSS and JavaScript
+- Database: SQLite with SQLAlchemy
 
 
 ## Contributing
