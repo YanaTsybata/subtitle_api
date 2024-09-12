@@ -16,6 +16,7 @@ This Flask application enables real-time subtitle management for multilingual br
 - Database: SQLite with SQLAlchemy
 
 
+
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
